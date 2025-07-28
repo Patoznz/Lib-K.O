@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil do Usuário</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #121212;
+    color: #eee;
+}
+
+.profilee-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+.profilee-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.profilee-picture {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: #777;
+}
+
+.profilee-picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.username {
+    font-size: 28px;
+    margin: 0;
+}
+
+.join-date,
+.bio {
+    font-size: 14px;
+    color: #aaa;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffc107;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #ccc;
+}
+
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 30px 0 20px;
+}
+
+.tab-btn {
+    padding: 10px 18px;
+    background: #1f1f1f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    background: #333;
+    font-weight: bold;
+}
+
+.tab-content {
+    display: none;
+    background: #1c1c1c;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+
+.section-title {
+    font-size: 20px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+}
+
+
+.review-card,
+.comment-card,
+.book-card {
+    background: #2a2a2a;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: transform 0.2s;
+}
+
+.review-card:hover,
+.comment-card:hover,
+.book-card:hover {
+    transform: translateY(-3px);
+}
+
+
+.review-header,
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.review-rating {
+    color: #ffc107;
+}
+
+.review-body h3 {
+    margin: 0 0 5px;
+}
+
+.review-footer,
+.comment-footer {
+    font-size: 13px;
+    color: #999;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+
+.comment-content {
+    margin-top: 5px;
+}
+
+
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 15px;
+}
+
+.book-card {
+    cursor: pointer;
+    overflow: hidden;
+    background: #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    transition: transform 0.3s;
+}
+
+.book-cover {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+}
+
+.book-info {
+    padding: 10px;
+}
+
+.book-title {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.book-authors {
+    font-size: 12px;
+    color: #aaa;
+}
+
+
+.loading,
+.error {
+    text-align: center;
+    margin: 20px 0;
+    font-style: italic;
+    color: #999;
+}
+
+.error {
+    color: #ff6b6b;
+}
+
+    </style>
+</head>
+<body>
+    <div id="header-comp"></div>
+    <script type="module">
+        import { createHeader } from '/components/header.js';
+        const app = document.getElementById('header-comp');
+        app.prepend(createHeader());
+    </script>
+
+    <main class="profilee-container">
+        <div id="profilee-content">
+            <div class="profilee-header">
+                <div class="profilee-picture" id="profilee-picture">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h1 class="username" id="username"></h1>
+                <p class="join-date" id="join-date"></p>
+                <p class="bio" id="bio"></p>
+                
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="reviews-count">0</div>
+                        <div class="stat-label">Avaliações</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="books-count">0</div>
+                        <div class="stat-label">Livros Lidos</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="comments-count">0</div>
+                        <div class="stat-label">Comentários</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="reviews">Avaliações</button>
+                <button class="tab-btn" data-tab="comments">Comentários</button>
+                <button class="tab-btn" data-tab="books">Livros Lidos</button>
+            </div>
+            
+            <div id="reviews-tab" class="tab-content active">
+                <h2 class="section-title">Avaliações</h2>
+                <div id="reviews-container" class="reviews-grid"></div>
+                <div id="reviews-loading" class="loading">Carregando avaliações...</div>
+            </div>
+            
+            <div id="comments-tab" class="tab-content">
+                <h2 class="section-title">Comentários</h2>
+                <div id="comments-container" class="comments-grid"></div>
+                <div id="comments-loading" class="loading">Carregando comentários...</div>
+            </div>
+            
+            <div id="books-tab" class="tab-content">
+                <h2 class="section-title">Livros Lidos</h2>
+                <div id="books-container" class="books-grid"></div>
+                <div id="books-loading" class="loading">Carregando livros lidos...</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentUserId;
+       
+        window.addEventListener('DOMContentLoaded', () => {
+            const match = window.location.pathname.match(/\/user\/(\d+)/);
+            const userId = match ? match[1] : null;
+
+            if (!userId) {
+                document.body.innerHTML = '<p class="error">ID do usuário não fornecido</p>';
+                return;
+            }
+            
+            loadProfile(userId);
+            loadReviews(userId);
+            loadComments(userId);
+            loadReadBooks(userId);
+            setupTabs();
+        });
+        
+        async function loadProfile(userId) {
+            console.log(userId); 
+            try {
+                const response = await fetch(`/api/users/${userId}`);
+                if (!response.ok) {
+                    throw new Error('Usuário não encontrado');
+                }
+                
+                const user = await response.json();
+                displayProfile(user);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+        
+        function displayProfile(user) {
+            document.getElementById('username').textContent = user.username;
+            document.getElementById('join-date').textContent = `Membro desde ${new Date(user.created_at).toLocaleDateString()}`;
+            
+            const profilePic = document.getElementById('profilee-picture');
+            if (user.photo_url) {
+                profilePic.innerHTML = `<img src="${user.photo_url}" alt="${user.username}">`;
+            } else {
+                profilePic.innerHTML = `<i class="fas fa-user"></i>`;
+            }
+        }
+        
+        async function loadReviews(userId) {
+            try {
+                const response = await fetch(`/api/reviews/user/${userId}`);
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar reviews');
+                }
+                
+                const reviews = await response.json();
+                displayReviews(reviews);
+                document.getElementById('reviews-count').textContent = reviews.length;
+                document.getElementById('reviews-loading').style.display = 'none';
+            } catch (error) {
+                console.error('Erro ao carregar reviews:', error);
+                document.getElementById('reviews-loading').innerHTML = `<p class="error">${error.message}</p>`;
+            }
+        }
+        
+        function displayReviews(reviews) {
+            const container = document.getElementById('reviews-container');
+            container.innerHTML = '';
+            
+            if (reviews.length === 0) {
+                container.innerHTML = '<p>Nenhuma avaliação encontrada.</p>';
+                return;
+            }
+            
+            reviews.forEach(review => {
+                const reviewCard = document.createElement('div');
+                reviewCard.className = 'review-card';
+                reviewCard.innerHTML = `
+                    <div class="review-header">
+                        <div class="review-book-title">
+                            <a href="/livro?id=${review.book_id}">${review.book_title}</a>
+                        </div>
+                        <div class="review-rating">${'★'.repeat(review.rating)}</div>
+                    </div>
+                    <div class="review-body">
+                        <h3>${review.title}</h3>
+                        <p class="review-comment">${review.content}</p>
+                    </div>
+                    <div class="review-footer">
+                        <span>${new Date(review.created_at).toLocaleDateString()}</span>
+                    </div>
+                `;
+                container.appendChild(reviewCard);
+            });
+        }
+        
+        async function loadComments(userId) {
+    try {
+        const response = await fetch(`/api/users/comments/user?userId=${userId}`);
+        if (!response.ok) {
+            throw new Error('Falha ao carregar comentários');
+        }
+
+        const comments = await response.json();
+        displayComments(comments);
+        document.getElementById('comments-count').textContent = comments.length;
+        document.getElementById('comments-loading').style.display = 'none';
+    } catch (error) {
+        console.error('Erro ao carregar comentários:', error);
+        document.getElementById('comments-loading').innerHTML = `<p class="error">${error.message}</p>`;
+    }
+}
+        
+        function displayComments(comments) {
+            const container = document.getElementById('comments-container');
+            container.innerHTML = '';
+            
+            if (comments.length === 0) {
+                container.innerHTML = '<p>Nenhum comentário encontrado.</p>';
+                return;
+            }
+            
+            comments.forEach(comment => {
+                const commentCard = document.createElement('div');
+                commentCard.className = 'comment-card';
+                commentCard.innerHTML = `
+                    <div class="comment-header">
+                        <div class="comment-review-title">
+                            <a href="/livro?id=${comment.book_id}#review-${comment.review_id}">${comment.review_title}</a>
+                        </div>
+                    </div>
+                    <div class="comment-content">
+                        <p class="comment-text">${comment.content}</p>
+                    </div>
+                    <div class="comment-footer">
+                        <span>No livro: <a href="/livro?id=${comment.book_id}">${comment.book_title}</a></span>
+                        <span>${new Date(comment.created_at).toLocaleDateString()}</span>
+                    </div>
+                `;
+                container.appendChild(commentCard);
+            });
+        }
+        
+        async function loadReadBooks(userId) {
+            try {
+                const response = await fetch(`/api/books/user/read?userId=${userId}`);
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar livros lidos');
+                }
+                
+                const books = await response.json();
+                displayBooks(books);
+                document.getElementById('books-count').textContent = books.length;
+                document.getElementById('books-loading').style.display = 'none';
+            } catch (error) {
+                console.error('Erro ao carregar livros lidos:', error);
+                document.getElementById('books-loading').innerHTML = `<p class="error">${error.message}</p>`;
+            }
+        }
+        
+        function displayBooks(books) {
+            const container = document.getElementById('books-container');
+            container.innerHTML = '';
+            
+            if (books.length === 0) {
+                container.innerHTML = '<p>Nenhum livro lido encontrado.</p>';
+                return;
+            }
+            
+            books.forEach(book => {
+                const bookCard = document.createElement('div');
+                bookCard.className = 'book-card';
+                bookCard.innerHTML = `
+                    <img src="${book.cover_url}" alt="${book.title}" class="book-cover">
+                    <div class="book-info">
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-authors">${book.authors || 'Autor desconhecido'}</div>
+                    </div>
+                `;
+                bookCard.addEventListener('click', () => {
+                    window.location.href = `/livro?id=${book.id}`;
+                });
+                container.appendChild(bookCard);
+            });
+        }
+        
+        function setupTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    btn.classList.add('active');
+
+                    const tabId = btn.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+        }
+        
+        function showError(message) {
+            
+            console.log(message);
+        }
+        
+        // Debug functions
+        function debugProfile(user) {
+            console.log('Perfil carregado:', user);
+        }
+        
+        function debugReviews(reviews) {
+            console.log('Reviews carregadas:', reviews);
+        }
+        
+        function debugComments(comments) {
+            console.log('Comentários carregados:', comments);
+        }
+        
+        function debugBooks(books) {
+            console.log('Livros lidos carregados:', books);
+        }
+    </script>
+</body>
+</html>

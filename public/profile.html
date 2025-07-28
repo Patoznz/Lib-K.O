@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="./responsive.css">
+    <style>
+.profile-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.profile-header img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tabs button {
+    padding: 10px 15px;
+    background: #333;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.tabs button.active {
+    background: #555;
+}
+
+.tab-pane {
+    display: none;
+    padding: 20px;
+    background: #222;
+    border-radius: 8px;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.review-card, .comment-card, .book-card {
+    background: #333;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+}
+
+.book-card {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+}
+
+.book-card img {
+    width: 100px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.review-header, .comment-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.rating {
+    color: #ffc107;
+}
+
+.read-books-section {
+        margin-top: 40px;
+        padding: 20px;
+        background: #222;
+        border-radius: 8px;
+    }
+    
+    .books-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .book-card {
+        background: #333;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+    
+    .book-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .book-cover {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .book-info {
+        padding: 10px;
+    }
+    
+    .book-info h3 {
+        font-size: 16px;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .book-info p {
+        font-size: 14px;
+        color: #aaa;
+        margin: 5px 0 0;
+    }
+    
+    .no-books {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+    }
+    
+    .error {
+        color: #ff6b6b;
+        text-align: center;
+    }
+    
+    </style>
+</head>
+<body>
+    <div id="header-comp"></div>
+    <script type="module">
+        import { createHeader } from './components/header.js';
+        const app = document.getElementById('header-comp');
+        app.prepend(createHeader());
+    </script>
+    
+    <main class="profile-container">
+        
+        <section class="profile-header">
+            <img id="user-photo" src="" alt="Foto do usuário">
+            <div>
+                <h1 id="username"></h1>
+            </div>
+        </section>
+
+        <section class="user-content">
+            <div class="tabs">
+                <button class="active" data-tab="reviews">Minhas Reviews</button>
+                <button data-tab="comments">Meus Comentários</button>
+                <button data-tab="books">Meus Livros</button>
+                <button data-tab="settings">Configurações</button>
+            </div>
+
+            <div class="tab-content">
+                <div id="reviews-tab" class="tab-pane active">
+                    <!-- Reviews do usuário serão carregadas aqui -->
+                </div>
+                
+                <div id="comments-tab" class="tab-pane">
+                    <!-- Comentários do usuário serão carregados aqui -->
+                </div>
+                
+                <div id="books-tab" class="tab-pane">
+                    <div id="read-books-container" class="books-container"></div>
+                </div>
+                
+                <div id="settings-tab" class="tab-pane">
+                    <form id="profile-form">
+                        <label>Nome de Usuário:</label>
+                        <input type="text" id="usernamee" required>
+                        
+                        <label>Foto de Perfil (URL):</label>
+                        <input type="url" id="profile-photo">
+                        
+                        <label>Email:</label>
+                        <input type="email" id="email" required>
+                        
+                        <label>Nova Senha (deixe em branco para manter a atual):</label>
+                        <input type="password" id="new-password">
+                        
+                        <button type="submit">Salvar Alterações</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        async function loadReadBooks() {
+            try {
+                console.log('Iniciando carregamento de livros lidos...');
+                const response = await fetch('/api/books/user/read', {
+                    credentials: 'include'
+                });
+                
+                console.log('Status da resposta:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Erro na resposta:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const books = await response.json();
+                console.log('Livros recebidos da API:', books);
+                
+                const container = document.getElementById('read-books-container');
+                container.innerHTML = '';
+                
+                if (!books || books.length === 0) {
+                    container.innerHTML = '<p class="no-books">Você ainda não marcou nenhum livro como lido.</p>';
+                    return;
+                }
+                
+                books.forEach(book => {
+                    const bookCard = document.createElement('div');
+                    bookCard.className = 'book-card';
+                    bookCard.innerHTML = `
+                        <img src="${book.cover_url}" alt="${book.title}" class="book-cover">
+                        <div class="book-info">
+                            <h3>${book.title}</h3>
+                            <p>${book.authors || 'Autor desconhecido'}</p>
+                        </div>
+                    `;
+                    bookCard.addEventListener('click', () => {
+                        window.location.href = `/livro?id=${book.id}`;
+                    });
+                    container.appendChild(bookCard);
+                });
+                
+            } catch (error) {
+                console.error('Erro ao carregar livros lidos:', error);
+                document.getElementById('read-books-container').innerHTML = `
+                    <p class="error">Erro ao carregar livros lidos: ${error.message}</p>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadReadBooks);
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/users/profile');
+                if (!response.ok) throw new Error('Erro ao carregar perfil');
+                
+                const profile = await response.json();
+                
+                document.getElementById('username').textContent = profile.username;
+                document.getElementById('user-photo').src = profile.photo_url;
+                
+                document.getElementById('username').value = profile.username;
+                document.getElementById('profile-photo').value = profile.photo_url;
+                document.getElementById('email').value = profile.email;
+                
+                loadUserReviews();
+                loadUserComments();
+                loadReadBooks();
+                
+            } catch (error) {
+                console.error('Erro ao carregar perfil:', error);
+                alert('Erro ao carregar perfil: ' + error.message);
+            }
+        }
+
+        async function loadUserReviews() {
+            try {
+                const response = await fetch('/api/reviews/user');
+                if (!response.ok) throw new Error('Erro ao carregar reviews');
+                
+                const reviews = await response.json();
+                const container = document.getElementById('reviews-tab');
+                container.innerHTML = '';
+
+                if (reviews.length === 0) {
+                    container.innerHTML = '<p>Você ainda não escreveu nenhuma review.</p>';
+                    return;
+                }
+
+                reviews.forEach(review => {
+                    const reviewCard = document.createElement('div');
+                    reviewCard.className = 'review-card';
+                    reviewCard.innerHTML = `
+                        <div class="review-header">
+                            <h3>${review.title}</h3>
+                            <div class="rating">${'★'.repeat(review.rating)}</div>
+                        </div>
+                        <p class="book-title">No livro: <a href="/livro?id=${review.book_id}">${review.book_title}</a></p>
+                        <div class="review-content">${review.content}</div>
+                        <p class="review-date">${new Date(review.created_at).toLocaleDateString()}</p>
+                    `;
+                    container.appendChild(reviewCard);
+                });
+            } catch (err) {
+                console.error('Erro ao carregar reviews:', err);
+                const container = document.getElementById('reviews-tab');
+                container.innerHTML = '<p>Erro ao carregar suas reviews.</p>';
+            }
+        }
+
+        async function loadUserComments() {
+            try {
+                const response = await fetch('/api/users/comments/user');
+                if (!response.ok) throw new Error('Erro ao carregar comentários');
+                
+                const comments = await response.json();
+                const container = document.getElementById('comments-tab');
+                container.innerHTML = '';
+
+                if (comments.length === 0) {
+                    container.innerHTML = '<p>Você ainda não fez nenhum comentário.</p>';
+                    return;
+                }
+
+                comments.forEach(comment => {
+                    const commentCard = document.createElement('div');
+                    commentCard.className = 'comment-card';
+                    commentCard.innerHTML = `
+                        <p class="comment-content">${comment.content}</p>
+                        <p class="comment-meta">
+                            <span>Em: <a href="/livro?id=${comment.book_id}#review-${comment.review_id}">${comment.review_title}</a></span>
+                            <span>No livro: <a href="/livro?id=${comment.book_id}">${comment.book_title}</a></span>
+                        </p>
+                        <p class="comment-date">${new Date(comment.created_at).toLocaleDateString()}</p>
+                    `;
+                    container.appendChild(commentCard);
+                });
+            } catch (err) {
+                console.error('Erro ao carregar comentários:', err);
+                const container = document.getElementById('comments-tab');
+                container.innerHTML = '<p>Erro ao carregar seus comentários.</p>';
+            }
+        }
+
+        async function loadUserBooks() {
+            try {
+                const response = await fetch('/api/books/user');
+                if (!response.ok) throw new Error('Erro ao carregar livros');
+                
+                const books = await response.json();
+                const container = document.getElementById('books-tab');
+                container.innerHTML = '';
+
+                if (books.length === 0) {
+                    container.innerHTML = '<p>Você ainda não adicionou nenhum livro.</p>';
+                    return;
+                }
+
+                books.forEach(book => {
+                    const bookCard = document.createElement('div');
+                    bookCard.className = 'book-card';
+                    bookCard.innerHTML = `
+                        <img src="${book.cover_url}" alt="${book.title}">
+                        <h3>${book.title}</h3>
+                        <p>${book.authors || 'Autor desconhecido'}</p>
+                        <p>${book.page_count} páginas</p>
+                    `;
+                    bookCard.addEventListener('click', () => {
+                        window.location.href = `/livro?id=${book.id}`;
+                    });
+                    container.appendChild(bookCard);
+                });
+            } catch (err) {
+                console.error('Erro ao carregar livros:', err);
+                const container = document.getElementById('books-tab');
+                container.innerHTML = '<p>Erro ao carregar seus livros.</p>';
+            }
+        }
+
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('usernamee').value;
+            const photo_url = document.getElementById('profile-photo').value;
+            const email = document.getElementById('email').value;
+            const newPassword = document.getElementById('new-password').value;
+            
+            try {
+                const response = await fetch('/api/users/profile', {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ username, photo_url, email, newPassword }),
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Perfil atualizado com sucesso!');
+
+                    document.querySelector('.profile-header h1').textContent = username;
+                    document.getElementById('user-photo').src = photo_url;
+                    
+                    const nameUserElements = document.querySelectorAll('.nameUser');
+                    nameUserElements.forEach(el => {
+                        el.textContent = username;
+                    });
+                } else {
+                    throw new Error(result.error || 'Falha ao atualizar perfil');
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar perfil:', error);
+                alert('Erro: ' + error.message);
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', loadProfile);
+
+        document.querySelectorAll('.tabs button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tabs button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                button.classList.add('active');
+                
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('active');
+                });
+
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

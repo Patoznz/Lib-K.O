@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lib K.O</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./responsive.css">
+    <link rel="stylesheet" href="/fa/css/all.min.css">
+
+    <style>
+        .categoria-tag {
+            background: #333;
+            color: #0cf;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-right: 5px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        
+        .categorias span {
+            background: #333;
+            color: #0cf;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+    </style>
+
+</head>
+<body>
+    <div id="header-comp"></div>
+    <script type="module">
+        import { createHeader } from './components/header.js';
+        const app = document.getElementById('header-comp');
+        app.prepend(createHeader());
+    </script>
+   <main>
+        <section class="livro-destaque">
+            <div class="imagem-destaque">
+                <img id="background-img" src="imgs/Frank Kafka.jpg" alt="imagem do destaque">
+            </div>
+
+            <div class="container-capa">
+                <img id="cover-img" src="imgs/capa.jpg" alt="capa do livro" class="capa-destaque">
+            </div>
+            
+            <div class="info-destaque">
+                <h1 id="book-title">Metamorfose</h1>
+
+                <div class="autor">
+                    <span id="book-authors">Autor: Franz Kafka</span>
+                    <span id="book-pages">Páginas: 152</span>
+                    <span id="reading-time">Tempo: 180 min</span>
+                </div>
+
+                <div class="categorias">
+                    <span>Ficção</span>
+                    <span>Aventura</span>
+                </div>
+
+                <p id="book-description" class="descricao">
+                   Lorem ipsum dolor sit amet consectetur adipisicing elit...
+                </p>
+
+                 <div class="botoes">
+                    <button id="btn">Ver mais</button>
+                 </div>
+            </div>
+        </section>
+
+        <div id="books-container" class="Livros">
+            <!-- Os livros serão carregados aqui -->
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    </main>
+    <script>
+        document.addEventListener('error', function(e) {
+            const elem = e.target;
+            if (elem.tagName.toLowerCase() === 'img') {
+                console.error('Imagem não carregada:', elem.src);
+                elem.style.display = 'none';
+            }
+        }, true);
+
+        async function loadHighlight() {
+            try {
+                const today = new Date();
+                const month = `${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
+                
+                const response = await fetch(`/api/books/book-of-month?month=${month}`);
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar destaque');
+                }
+
+                const book = await response.json();
+
+                document.getElementById('background-img').src = book.background_url;
+                document.getElementById('cover-img').src = book.cover_url;
+                document.getElementById('book-title').textContent = book.title;
+                document.getElementById('book-authors').textContent = `Autor: ${book.authors || 'Desconhecido'}`;
+
+                const sinopseElement = document.getElementById('book-description');
+                if (book.sinopse) {
+                    try {
+                        sinopseElement.innerHTML = marked.parse(book.sinopse.substring(0, 300) + '...');
+                    } catch (e) {
+                        sinopseElement.textContent = book.sinopse.substring(0, 300) + '...';
+                    }
+                }
+                
+                document.getElementById('book-pages').textContent = `Páginas: ${book.page_count || 'N/A'}`;
+                document.getElementById('reading-time').textContent = `Tempo: ${book.reading_time || 'N/A'} min`;
+
+                const categoriesContainer = document.querySelector('.categorias');
+                categoriesContainer.innerHTML = '';
+                if (book.categories) {
+                    book.categories.split(', ').forEach(category => {
+                        const categoryEl = document.createElement('span');
+                        categoryEl.textContent = category;
+                        categoriesContainer.appendChild(categoryEl);
+                    });
+                }
+
+                document.getElementById('btn').onclick = () => {
+                    window.location.href = `/livro?id=${book.id}`;
+                };
+
+            } catch (error) {
+                console.error('Erro ao carregar destaque:', error);
+                document.querySelector('.livro-destaque').innerHTML += `
+                    <div class="error-message">
+                        Não foi possível carregar o destaque. 
+                        <button onclick="window.location.reload()">Tentar novamente</button>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadAlternativeHighlight() {
+            try {
+                const response = await fetch('/api/books');
+                if (!response.ok) throw new Error('Failed to load books');
+                
+                const books = await response.json();
+                if (books.length > 0) {
+                    displayBookHighlight(books[0]);
+                } else {
+                    showErrorHighlight();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar destaque alternativo:', error);
+                showErrorHighlight();
+            }
+        }
+
+        function displayBookHighlight(book) {
+            if (!book) return;
+
+            if (book.background_url) {
+                document.getElementById('background-img').src = book.background_url;
+            } else {
+                document.getElementById('background-img').style.display = 'none';
+            }
+            
+            if (book.cover_url) {
+                document.getElementById('cover-img').src = book.cover_url;
+            }
+            
+            document.getElementById('book-title').textContent = book.title || 'Título desconhecido';
+            
+            if (book.authors) {
+                document.getElementById('book-authors').textContent = `Autor: ${book.authors}`;
+            }
+
+            const sinopseContainer = document.getElementById('book-description');
+            if (book.sinopse) {
+                try {
+                    sinopseContainer.innerHTML = marked.parse(book.sinopse.substring(0, 300) + '...');
+                } catch (e) {
+                    console.error('Erro ao processar sinopse:', e);
+                    sinopseContainer.textContent = book.sinopse.substring(0, 300) + '...';
+                }
+            } else {
+                sinopseContainer.textContent = 'Sinopse não disponível';
+            }
+            
+            document.getElementById('book-pages').textContent = `Páginas: ${book.page_count || 'N/A'}`;
+            document.getElementById('reading-time').textContent = `Tempo: ${book.reading_time || 'N/A'} min`;
+
+            const categoriesContainer = document.querySelector('.categorias');
+            categoriesContainer.innerHTML = '';
+            if (book.categories) {
+                book.categories.split(', ').forEach(category => {
+                    if (category) {
+                        const categoryEl = document.createElement('span');
+                        categoryEl.textContent = category;
+                        categoriesContainer.appendChild(categoryEl);
+                    }
+                });
+            }
+
+            const btn = document.getElementById('btn');
+            if (btn && book.id) {
+                btn.onclick = () => window.location.href = `/livro?id=${book.id}`;
+            }
+        }
+
+        function showErrorHighlight() {
+            const highlightSection = document.querySelector('.livro-destaque');
+            highlightSection.innerHTML = `
+                <div class="error-highlight">
+                    <h2>Destaque Indisponível</h2>
+                    <p>Não foi possível carregar o livro em destaque no momento.</p>
+                    <button onclick="window.location.reload()">Tentar novamente</button>
+                </div>
+            `;
+        }
+
+        async function loadBooks() {
+            try {
+                const response = await fetch('/api/books');
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP! status: ${response.status}`);
+                }
+                
+                const books = await response.json();
+                console.log('Dados recebidos:', books); 
+                
+                const container = document.getElementById('books-container');
+                container.innerHTML = '';
+                
+                if (books.length === 0) {
+                    container.innerHTML = '<p>Nenhum livro encontrado.</p>';
+                    return;
+                }
+                
+                books.forEach(book => {
+                    const bookCard = document.createElement('div');
+                    bookCard.className = 'livro-card';
+                    bookCard.innerHTML = `
+                        <img src="${book.cover_url || 'placeholder.jpg'}" alt="Capa do livro" class="livro-capa">
+                        <div class="livro-info">
+                            <h3 class="livro-titulo">${book.title || 'Sem título'}</h3>
+                            <p class="livro-autor">${book.authors || 'Autor desconhecido'}</p>
+                            <!-- opcional -->
+                            <p class="livro-meta">
+                                <span>${book.page_count} páginas</span>
+                                <span>${book.reading_time} min</span>
+                            </p>
+                            <div class="livro-categorias" style="margin-top: 10px;">
+                                ${book.categories ? book.categories.split(', ').map(cat => 
+                                    `<span class="categoria-tag">${cat}</span>`
+                                ).join('') : ''}
+                            </div>
+                            ${book.is_book_of_month ? '<span class="badge-livro-mes">⭐ Livro do Mês</span>' : ''}
+                        </div>
+                    `;
+                    bookCard.addEventListener('click', () => {
+                        window.location.href = `/livro?id=${book.id}`;
+                    });
+                    container.appendChild(bookCard);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar livros:', error);
+                const container = document.getElementById('books-container');
+                container.innerHTML = `
+                    <p class="error-message">Erro ao carregar livros. Por favor, recarregue a página.</p>
+                    <button onclick="window.location.reload()">Recarregar</button>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHighlight();
+            loadBooks();
+        });
+    </script>
+</body>
+</html>
