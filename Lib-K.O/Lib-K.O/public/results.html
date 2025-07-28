@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados da Busca - Lib K.O</title>
+    <link rel="stylesheet" href="/fa/css/all.min.css">
+    <link rel="stylesheet" href="./responsive.css">
+    <link rel="stylesheet" href="./styles.css">
+
+    <!-- se for tirar o bootstrap tira esse (não recomendo, aprenda bootstrap, n é dificil e é bem responsivo, pergunte ao chat gpt) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .search-highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+        .suggestion-item {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .suggestion-item:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body class="bg-black">
+    <div id="header-comp"></div>
+    <script type="module">
+        import { createHeader } from './components/header.js';
+        const app = document.getElementById('header-comp');
+        app.prepend(createHeader());
+    </script>
+
+    <main class="container my-4">
+        <h1 class="mb-4">Resultados da Busca</h1>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Refinar Busca</h5>
+                        <div class="mb-3">
+                            <input type="text" id="search-box" class="form-control" placeholder="Buscar livros...">
+                            <div id="suggestions-container" class="mt-2 border rounded" style="display:none;"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ordenar por:</label>
+                            <select id="sort-by" class="form-select">
+                                <option value="relevance">Relevância</option>
+                                <option value="newest">Mais Recentes</option>
+                                <option value="oldest">Mais Antigos</option>
+                            </select>
+                        </div>
+                        <button id="apply-filters" class="btn btn-primary w-100">Aplicar Filtros</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div id="results-container" class="row row-cols-1 row-cols-md-2 g-4">
+                    <!-- Os resultados serão carregados aqui -->
+                </div>
+                <div id="loading-spinner" class="text-center my-4" style="display:none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                </div>
+                <div id="no-results" class="text-center my-4" style="display:none;">
+                    <p>Nenhum livro encontrado. Tente outros termos de busca.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- detalhe, voce pode tirar o bootstrap sim com alguma ia ai e fazer o css, mas vai dar trabalho -->
+    <!-- ta usando bootstrap, se não quiser aprender a usar por preguiça de UMA UNICA PAGINA QUE TEM, é so tirar, se vira pra arrumar, seu beta -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- esse aqui n pode tirar nem fudeno -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q');
+            
+            if (query) {
+                document.getElementById('search-box').value = query;
+                searchBooks(query);
+            }
+
+            document.getElementById('search-box').addEventListener('input', handleSearchInput);
+            document.getElementById('search-box').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+            document.getElementById('apply-filters').addEventListener('click', () => {
+                performSearch();
+            });
+        });
+
+        async function searchBooks(query) {
+            const sortBy = document.getElementById('sort-by').value;
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`/api/books/search?q=${encodeURIComponent(query)}&sort=${sortBy}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP! status: ${response.status}`);
+                }
+                
+                const books = await response.json();
+                displayResults(books, query);
+            } catch (error) {
+                console.error('Erro na busca:', error);
+                document.getElementById('results-container').innerHTML = `
+                    <p class="text-danger">Erro ao carregar resultados. Tente novamente mais tarde.</p>
+                `;
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayResults(books, query) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = '';
+            
+            if (books.length === 0) {
+                document.getElementById('no-results').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('no-results').style.display = 'none';
+            
+            books.forEach(book => {
+                const highlightedTitle = highlightMatches(book.title, query);
+                const highlightedAuthors = book.authors ? highlightMatches(book.authors, query) : 'Autor desconhecido';
+                
+                const bookCard = document.createElement('div');
+                bookCard.className = 'col';
+                bookCard.innerHTML = `
+                    <div class="card h-100">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="${book.cover_url || 'placeholder.jpg'}" class="img-fluid rounded-start" alt="Capa do livro">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">${highlightedTitle}</h5>
+                                    <p class="card-text">${highlightedAuthors}</p>
+                                    <p class="card-text"><small class="text-muted">${book.page_count} páginas · ${book.reading_time} min</small></p>
+                                    <div class="livro-categorias mb-2">
+                                        ${book.categories ? book.categories.split(', ').map(cat => 
+                                            `<span class="badge bg-secondary me-1">${cat}</span>`
+                                        ).join('') : ''}
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="window.location.href='/livro?id=${book.id}'">Ver Detalhes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(bookCard);
+            });
+        }
+
+        function highlightMatches(text, query) {
+            if (!query || !text) return text;
+            
+            const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading-spinner').style.display = show ? 'block' : 'none';
+        }
+
+        async function handleSearchInput(e) {
+            const query = e.target.value.trim();
+            const container = document.getElementById('suggestions-container');
+            
+            if (query.length < 2) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/books/suggestions?q=${encodeURIComponent(query)}`);
+                const suggestions = await response.json();
+                displaySuggestions(suggestions, query);
+            } catch (error) {
+                console.error('Erro ao buscar sugestões:', error);
+                container.style.display = 'none';
+            }
+        }
+
+        function displaySuggestions(suggestions, query) {
+            const container = document.getElementById('suggestions-container');
+            container.innerHTML = '';
+            
+            if (suggestions.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            suggestions.forEach(suggestion => {
+                const suggestionEl = document.createElement('div');
+                suggestionEl.className = 'suggestion-item';
+                suggestionEl.innerHTML = highlightMatches(suggestion.title, query);
+                suggestionEl.onclick = () => {
+                    document.getElementById('search-box').value = suggestion.title;
+                    container.style.display = 'none';
+                    performSearch();
+                };
+                container.appendChild(suggestionEl);
+            });
+            
+            container.style.display = 'block';
+        }
+
+        function performSearch() {
+            const query = document.getElementById('search-box').value.trim();
+            document.getElementById('suggestions-container').style.display = 'none';
+            
+            if (query) {
+                window.location.href = `/results.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+    </script>
+</body>
+</html>

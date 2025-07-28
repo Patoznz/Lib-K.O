@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login & Registro</title>
+<link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./responsive.css">
+
+<style>
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: black;
+    color: white;
+    background-image: url(imgs/folha.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+
+  main {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 75px);
+  }
+
+
+  .container {
+    background: rgba(0, 0, 0, 0.452);
+    padding: 30px;
+    border-radius: 12px;
+    width: 350px;
+  }
+
+
+  h2 {
+    text-align: center;
+    color: rgb(255, 255, 255);
+    margin-bottom: 20px;
+  }
+
+
+  .container input {
+    width: 100%;
+    padding: 10px 12px;
+    color: white;
+    margin-bottom: 35px;
+    border-radius: 20px;
+    font-size: 16px;
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.089);
+    border: 1px solid #494949;
+    transition: all 0.5s;
+  }
+
+
+  .container input:focus {
+    outline: none;
+    border-color: var(--color-light-gray);
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  button {
+    width: 100%;
+    background: rgb(255, 255, 255);
+    color: #121212;
+    font-size: 18px;
+    padding: 8px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background 0.3s;
+    margin-top: 30px;
+  }
+
+  #showRegister {
+    cursor: pointer;
+    color: #0cf;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+
+  button:hover {
+    background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+  }
+
+  .error, .success {
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: none;
+  }
+
+  .error {
+    background: #a00;
+    color: #fee;
+  }
+
+  .success {
+    background: #0a0;
+    color: #efe;
+  }
+
+  .toggle-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .toggle-buttons button {
+    width: 50%;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #555;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .toggle-buttons button.active {
+    background: #0cf;
+    color: #121212;
+  }
+  
+  form {
+    display: none;
+  }
+
+  form.active {
+    display: block;
+  }
+
+  span {
+    font-size: 14px;
+    margin-left: 5px;
+  }
+</style>
+
+
+</head>
+<body class="login-page">
+  <div class="navbar">
+      <div class="navbar-left">
+        <img src="imgs/logo.png" class="logo">
+      </div>
+      <div class="navbar-center">
+        <a href="/" class="home-button">Home</a>
+        <a href="/perfil">Meus</a>
+        <a href="/adicionar-livro">Adicionar Livro</a>
+      </div>
+
+      <div class="navbar-right"></div>
+    </div>
+  <main>
+      <div class="container">
+
+        
+        <!-- Login Form -->
+        <form id="loginForm" class="active">
+          <h2>Login</h2>
+          
+          <input type="email" name="email" placeholder="Email" required />
+          <input type="password" name="password" placeholder="Senha" required />
+          
+          <div id="loginError" class="error"></div>
+          <div id="loginSuccess" class="success"></div>
+          
+          <button type="submit">Entrar</button>
+        </form>
+
+        <span>Ainda não tem uma conta?</span>
+        <a id="showRegister">Registre-se</a>
+        
+        <div class="toggle-buttons">
+          <button id="showLogin" class="active">Login</button>
+        </div>
+        <!-- Register Form -->
+        <form id="registerForm">
+          <h2>Cadastro</h2>
+
+          <input type="text" name="username" placeholder="Usuário" required />
+          <input type="email" name="email" placeholder="Email" required />
+          <input type="email" name="confirmEmail" placeholder="Confirme seu email" required />
+          <input type="password" name="password" placeholder="Senha" required />
+          <input type="password" name="confirmPassword" placeholder="Confirme a senha" required />
+          <input type="url" name="photo_url" placeholder="URL da Foto" required />
+
+          <div id="registerError" class="error"></div>
+          <div id="registerSuccess" class="success"></div>
+
+          <button type="submit">Registrar</button>
+        </form>
+      </div>
+  </main>
+
+
+<script>
+  const showLoginBtn = document.getElementById('showLogin');
+  const showRegisterBtn = document.getElementById('showRegister');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+
+  const loginError = document.getElementById('loginError');
+  const loginSuccess = document.getElementById('loginSuccess');
+  const registerError = document.getElementById('registerError');
+  const registerSuccess = document.getElementById('registerSuccess');
+
+  showLoginBtn.addEventListener('click', () => {
+    showLoginBtn.classList.add('active');
+    showRegisterBtn.classList.remove('active');
+    loginForm.classList.add('active');
+    registerForm.classList.remove('active');
+
+    clearMessages();
+  });
+
+  showRegisterBtn.addEventListener('click', () => {
+    showRegisterBtn.classList.add('active');
+    showLoginBtn.classList.remove('active');
+    registerForm.classList.add('active');
+    loginForm.classList.remove('active');
+
+    clearMessages();
+  });
+
+  function clearMessages() {
+    loginError.style.display = 'none';
+    loginSuccess.style.display = 'none';
+    registerError.style.display = 'none';
+    registerSuccess.style.display = 'none';
+  }
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMessages();
+
+    const email = loginForm.email.value.trim();
+    const password = loginForm.password.value;
+
+    if (!validateEmail(email)) {
+      loginError.textContent = 'Email inválido.';
+      loginError.style.display = 'block';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        loginSuccess.textContent = 'Login realizado com sucesso! ID: ' + result.id;
+        loginSuccess.style.display = 'block';
+        loginForm.reset();
+        setTimeout(() => {
+            window.location.href = '/index.html'; 
+        }, 2000);
+      } else {
+        throw new Error(result.error || 'Erro desconhecido');
+      }
+    } catch (err) {
+      loginError.textContent = err.message;
+      loginError.style.display = 'block';
+    }
+  });
+
+    async function checkSession() {
+      try {
+        const response = await fetch('/api/check-session');
+        const result = await response.json();
+        
+        if (result.loggedIn) {
+          window.location.href = '/index.html';
+        }
+      } catch (err) {
+        console.error('Erro ao verificar sessão:', err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', checkSession);
+        
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMessages();
+
+    const username = registerForm.username.value.trim();
+    const email = registerForm.email.value.trim();
+    const confirmEmail = registerForm.confirmEmail.value.trim();
+    const password = registerForm.password.value;
+    const confirmPassword = registerForm.confirmPassword.value;
+    const photo_url = registerForm.photo_url.value.trim();
+
+    if (email !== confirmEmail) {
+      registerError.textContent = 'Emails não conferem.';
+      registerError.style.display = 'block';
+      return;
+    }
+    if (!validateEmail(email)) {
+      registerError.textContent = 'Email inválido.';
+      registerError.style.display = 'block';
+      return;
+    }
+    if (password !== confirmPassword) {
+      registerError.textContent = 'Senhas não conferem.';
+      registerError.style.display = 'block';
+      return;
+    }
+    if (password.length < 6) {
+      registerError.textContent = 'Senha precisa ter pelo menos 6 caracteres.';
+      registerError.style.display = 'block';
+      return;
+    }
+    if (!isValidURL(photo_url)) {
+      registerError.textContent = 'URL da foto inválida.';
+      registerError.style.display = 'block';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/users/register', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password, photo_url })
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        registerSuccess.textContent = 'Usuário registrado com ID: ' + result.id;
+        registerSuccess.style.display = 'block';
+        registerForm.reset();
+      } else {
+        throw new Error(result.error || 'Erro desconhecido');
+      }
+    } catch (err) {
+      registerError.textContent = err.message;
+      registerError.style.display = 'block';
+    }
+  });
+
+  function validateEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function isValidURL(string) {
+    try {
+      new URL(string);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+</script>
+
+</body>
+</html>

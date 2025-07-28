@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Livro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="./responsive.css">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
+    <!-- Biblioteca para preview do  markdown -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.16.1/dist/easymde.min.css">
+</head>
+<body>
+    <div id="header-comp"></div>
+    <script type="module">
+        import { createHeader } from './components/header.js';
+        const app = document.getElementById('header-comp');
+        app.prepend(createHeader());
+    </script>
+
+    <main style="height: calc(100vh - 76px); align-items: center; display: flex;">
+        <div class="add-book-container">
+            <!-- <h1>Adicionar Novo Livro</h1> -->
+            <div class="preview-box">
+
+                <div id="preview-container">
+                    <p class="preview-label">Pré-visualização:</p>
+                    <img id="image-preview" src="" alt="Preview da imagem"/>
+                </div>
+
+                <div class="set-urls">
+                    <label for="coverUrl">URL da Capa</label>
+                    <input type="url" id="coverUrl" required oninput="updateImagePreview()">
+
+                    <label for="backgroundUrl">URL do Background</label>
+                    <input type="url" id="backgroundUrl" required>
+                </div>
+            </div>
+            <form id="addBookForm">
+
+                <div class="set-bar">
+                    <div>
+                        <label for="title">Título</label>
+                        <input type="text" id="title" required>
+                    </div>
+                    <div>
+                        <label for="pageCount">Número de Páginas</label>
+                        <input type="number" id="pageCount" min="0" required>
+                    </div>
+                    <div>
+                        <label for="readingTime">Tempo de Leitura</label>
+                        <input type="number" id="readingTime" min="0" required>
+                    </div>
+                    <div>
+                        <label for="authors">Autores</label>
+                        <input type="text" id="authors" required>
+                    </div>
+                    <div>
+                        <label for="categories-select">Categorias</label>
+                        <select id="categories-select" multiple placeholder="Escolha as categorias..."></select>
+                    </div>
+                </div>
+                
+                <div id="book-of-month-section">
+                    <label>
+                        <input type="checkbox" id="is-book-of-month"> Definir como Livro do Mês
+                    </label>
+                    <div id="month-year-container">
+                        <label for="book-month-date">Mês/Ano (MM/AAAA):</label>
+                        <input type="text" id="book-month-date" placeholder="06/2023">
+                    </div>
+                </div>
+
+                <label for="sinopse">Sinopse (Markdown)</label>
+                <textarea id="sinopse" rows="5"></textarea>
+                <div id="sinopse-preview" class="markdown-preview"></div>
+
+                <button type="submit">Adicionar Livro</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Bibliotecas para markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/easymde@2.16.1/dist/easymde.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+    
+    <script>
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/books/categories');
+                const categories = await response.json();
+
+                const select = document.getElementById('categories-select');
+                select.innerHTML = '';
+
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = cat.name;
+                    select.appendChild(option);
+                });
+
+                new TomSelect('#categories-select', {
+                    plugins: ['remove_button'],
+                    maxItems: null,
+                    create: false,
+                    persist: false,
+                    highlight: true,
+                    maxOptions: 100,
+                    dropdownDirection: 'auto',
+                });
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error);
+            }
+        }
+
+        function updateImagePreview() {
+        const url = document.getElementById("coverUrl").value.trim();
+        const previewContainer = document.getElementById("preview-container");
+        const image = document.getElementById("image-preview");
+
+            if (url) {
+            image.src = url;
+            previewContainer.classList.remove("hidden");
+            } else {
+            previewContainer.classList.add("hidden");
+            image.src = "";
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCategories);
+        const easyMDE = new EasyMDE({ 
+            element: document.getElementById('sinopse'),
+            spellChecker: false,
+            previewRender: (plainText) => {
+                return marked.parse(plainText);
+            }
+        });
+
+        easyMDE.codemirror.on("change", () => {
+            document.getElementById('sinopse-preview').innerHTML = marked.parse(easyMDE.value());
+        });
+
+        async function checkAdmin() {
+            try {
+                const response = await fetch('/api/check-session');
+                const data = await response.json();
+                if (data.loggedIn && data.isAdmin) {
+                    document.getElementById('book-of-month-section').style.display = 'block';
+
+                    document.getElementById('is-book-of-month').addEventListener('change', function() {
+                        document.getElementById('month-year-container').style.display = 
+                            this.checked ? 'block' : 'none';
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao verificar admin:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', checkAdmin);
+
+        document.getElementById('is-book-of-month').addEventListener('change', function() {
+            document.getElementById('month-year-container').style.display = this.checked ? 'block' : 'none';
+        });
+
+        document.getElementById('addBookForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const sinopse = easyMDE.value();
+            const coverUrl = document.getElementById('coverUrl').value;
+            const backgroundUrl = document.getElementById('backgroundUrl').value;
+            const authorsInput = document.getElementById('authors').value;
+            const isBookOfMonth = document.getElementById('is-book-of-month').checked;
+            const bookMonthDate = document.getElementById('book-month-date').value;
+            const pageCount = document.getElementById('pageCount').value;
+            const readingTime = document.getElementById('readingTime').value;
+
+            if (!title) {
+                alert('Título é obrigatório');
+                return;
+            }
+            if (!sinopse) {
+                alert('Sinopse é obrigatória');
+                return;
+            }
+            if (!coverUrl) {
+                alert('URL da capa é obrigatória');
+                return;
+            }
+            if (!backgroundUrl) {
+                alert('URL do background é obrigatória');
+                return;
+            }
+            if (!authorsInput) {
+                alert('Autores são obrigatórios');
+                return;
+            }
+            if (isBookOfMonth && !bookMonthDate) {
+                alert('Mês/ano é obrigatório para livro do mês');
+                return;
+            }
+            if (isBookOfMonth && !/^\d{2}\/\d{4}$/.test(bookMonthDate)) {
+                alert('Formato inválido! Use MM/AAAA (ex: 06/2023)');
+                return;
+            }
+
+            function isValidUrl(string) {
+                try {
+                    new URL(string);
+                    return true;
+                } catch {
+                    return false;
+                }
+            }
+            
+            if (!isValidUrl(coverUrl)) {
+                alert('URL da capa inválida');
+                return;
+            }
+            if (!isValidUrl(backgroundUrl)) {
+                alert('URL do background inválida');
+                return;
+            }
+
+            const authors = authorsInput.split(',').map(author => author.trim());
+
+            const selectedCategories = Array.from(document.getElementById('categories-select').selectedOptions)
+                .map(option => option.value);
+
+            try {
+                const response = await fetch('/api/books', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        title, 
+                        sinopse, 
+                        coverUrl, 
+                        backgroundUrl, 
+                        authors,
+                        isBookOfMonth,
+                        pageCount,
+                        readingTime,
+                        bookOfMonthDate: isBookOfMonth ? bookMonthDate : null,
+                        categories: selectedCategories
+                    }),
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('Livro adicionado com sucesso! ID: ' + result.id);
+                    window.location.href = '/';
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Falha ao adicionar livro');
+                }
+            } catch (error) {
+                console.error('Erro completo:', error);
+                alert('Erro: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

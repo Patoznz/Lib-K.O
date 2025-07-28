@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Livro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="./responsive.css">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.16.1/dist/easymde.min.css">
+</head>
+<body class="body-livro">
+    <div id="header-comp"></div>
+    <script type="module">
+        import { createHeader } from './components/header.js';
+        const app = document.getElementById('header-comp');
+        app.prepend(createHeader());
+    </script>
+
+    <main style="height: calc(100vh - 76px); align-items: center; display: flex;">
+        <div class="edit-book-container">
+            <div class="preview-box">
+                
+                <div id="preview-container">
+                    <p class="preview-label">Pré-visualização:</p>
+                    <img id="image-preview" src="" alt="Preview da imagem"/>
+                </div>
+                <div class="set-urls">
+                    <label for="coverUrl">URL da Capa</label>
+                    <input type="url" id="coverUrl" required oninput="updateImagePreview()">
+                    
+                    <label for="backgroundUrl">URL do Background</label>
+                    <input type="url" id="backgroundUrl" required>
+                </div>
+            </div>
+
+            <form id="editBookForm">
+                <!-- <h1>Editar Livro</h1> -->
+                 <div class="set-bar">
+                    <div>
+                        <label for="title">Título</label>
+                        <input type="text" id="title" required placeholder="Título">
+                    </div>
+                    <div>
+                        <label for="pageCount">Número de Páginas</label>
+                        <input type="number" id="pageCount" min="0" required placeholder="Número de Páginas">
+                    </div>
+                    <div>
+                        <label for="readingTime">Tempo de Leitura</label>
+                        <input type="number" id="readingTime" min="0" required placeholder="Tempo de Leitura">
+                    </div>
+                    <div>
+                        <label for="authors">Autores</label>
+                        <input type="text" id="authors" required placeholder="Autores">
+                    </div>
+                    <div>
+                        <label for="categories-select">Categorias</label>
+                        <select id="categories-select" multiple placeholder="Escolha as categorias..."></select>
+                    </div>
+                 </div>
+                
+                <label for="sinopse">Sinopse (Markdown)</label>
+                <textarea id="sinopse" rows="5"></textarea>
+                
+                
+                
+                <button type="submit">Atualizar Livro</button>
+                
+                <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+            </form>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/easymde@2.16.1/dist/easymde.min.js"></script>
+    
+    <script>
+        const easyMDE = new EasyMDE({ 
+            element: document.getElementById('sinopse'),
+            spellChecker: false
+        });
+
+        let currentBookId;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkSession();
+            loadBookDetails();
+        });
+
+        async function loadCategories() {
+    try {
+        const response = await fetch('/api/books/categories');
+        const categories = await response.json();
+
+        const bookCategoriesResponse = await fetch(`/api/books/${currentBookId}/categories`);
+        let bookCategories = [];
+
+        if (bookCategoriesResponse.ok) {
+            bookCategories = await bookCategoriesResponse.json();
+            if (!Array.isArray(bookCategories)) {
+                bookCategories = [];
+            }
+        }
+
+        const selectedIds = new Set(bookCategories.map(c => c.id));
+        const select = document.getElementById('categories-select');
+        select.innerHTML = '';
+
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            if (selectedIds.has(cat.id)) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+
+        if (select.tomselect) {
+            select.tomselect.destroy();
+        }
+
+        new TomSelect(select, {
+            plugins: ['remove_button'],
+            maxItems: null,
+            create: false,
+            persist: false,
+            highlight: true,
+            maxOptions: 100,
+            dropdownDirection: 'auto'
+        });
+
+    } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+        alert('Erro ao carregar categorias.');
+    }
+}
+
+        function getBookIdFromURL() {
+            const query = window.location.search.substring(1);
+            const params = new URLSearchParams(query);
+            return params.get('id');
+        }
+
+        async function checkSession() {
+            try {
+                const response = await fetch('/api/check-session');
+                const data = await response.json();
+                
+                if (!data.loggedIn) {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar sessão:', error);
+            }
+        }
+
+        async function loadBookDetails() {
+            currentBookId = getBookIdFromURL();
+            
+            if (!currentBookId) {
+                alert('ID do livro não encontrado na URL');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/books/${currentBookId}`);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Erro ao carregar livro');
+                }
+                
+                const book = await response.json();
+                document.getElementById('title').value = book.title;
+                easyMDE.value(book.sinopse);
+                document.getElementById('coverUrl').value = book.cover_url;
+                document.getElementById('backgroundUrl').value = book.background_url;
+                document.getElementById('pageCount').value = book.page_count;
+                document.getElementById('readingTime').value = book.reading_time;
+                
+                document.getElementById('authors').value = book.authors || '';
+                
+                await loadCategories();
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro: ' + error.message);
+            }
+        }
+
+         function updateImagePreview() {
+        const url = document.getElementById("coverUrl").value.trim();
+        const previewContainer = document.getElementById("preview-container");
+        const image = document.getElementById("image-preview");
+
+            if (url) {
+            image.src = url;
+            previewContainer.classList.remove("hidden");
+            } else {
+            previewContainer.classList.add("hidden");
+            image.src = "";
+            }
+        }
+        
+        function updateImagePreview() {
+      const coverUrl = document.getElementById("coverUrl").value.trim();
+      const imagePreview = document.getElementById("image-preview");
+
+      if (coverUrl) {
+        imagePreview.src = coverUrl;
+        imagePreview.style.display = "block";
+      } else {
+        imagePreview.src = "";
+        imagePreview.style.display = "none";
+      }
+    }
+
+        function updateBackgroundPreview() {
+        const bgUrl = document.getElementById("backgroundUrl").value.trim();
+        const mainElement = document.querySelector("body");
+
+        if (bgUrl && mainElement) {
+            mainElement.style.backgroundImage = `url('${bgUrl}')`;
+            mainElement.style.backgroundSize = "cover";
+            mainElement.style.backgroundPosition = "center";
+            mainElement.style.backgroundRepeat = "no-repeat";
+        } else if (mainElement) {
+            mainElement.style.backgroundImage = "";
+        }
+        }
+
+        // Atualiza ao digitar
+        document.getElementById("coverUrl").addEventListener("input", updateImagePreview);
+        document.getElementById("backgroundUrl").addEventListener("input", updateBackgroundPreview);
+
+
+        document.getElementById('editBookForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const sinopse = easyMDE.value();
+            const coverUrl = document.getElementById('coverUrl').value;
+            const backgroundUrl = document.getElementById('backgroundUrl').value;
+            const pageCount = document.getElementById('pageCount').value;
+            const readingTime = document.getElementById('readingTime').value;
+            const authorsInput = document.getElementById('authors').value;
+
+            const selectedCategories = Array.from(document.getElementById('categories-select').selectedOptions)
+                .map(option => option.value);
+
+            const authors = authorsInput.split(',').map(author => author.trim());
+
+            try {
+                const response = await fetch(`/api/books/${currentBookId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        title, 
+                        sinopse, 
+                        coverUrl, 
+                        backgroundUrl,
+                        pageCount,
+                        readingTime,
+                        authors,
+                        categories: selectedCategories
+                    }),
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    alert('Livro atualizado com sucesso!');
+                    window.location.href = `/livro?id=${currentBookId}`;
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Falha ao atualizar livro');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro: ' + error.message);
+            }
+        });
+
+        
+    </script>
+</body>
+</html>

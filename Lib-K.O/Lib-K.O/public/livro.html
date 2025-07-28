@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Livro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="./responsive.css">
+    <style>
+        main.book-details {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .book-header {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 40px;
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .large-cover {
+            width: 280px;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        .book-info {
+            flex: 1;
+        }
+
+        .book-info h1 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .authors-list {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #2a2a2a;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .author img {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .stars {
+            color: #ffc107;
+            font-size: 20px;
+        }
+
+        .sinopse {
+            margin-bottom: 25px;
+            font-size: 17px;
+            line-height: 1.8;
+            color: #ccc;
+        }
+
+        .book-of-month {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .reviews-section {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .reviews-section h2 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+        }
+
+        .review {
+            padding: 25px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .review-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .review-header h3 {
+            font-size: 20px;
+            color: #fff;
+        }
+
+        .review-rating {
+            color: #ffc107;
+            font-size: 18px;
+            margin-left: auto;
+        }
+
+        .review-content {
+            padding: 10px 0;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .review-content h1, 
+        .review-content h2, 
+        .review-content h3 {
+            margin: 1.5em 0 0.5em 0;
+        }
+
+        .review-content ul {
+            padding-left: 1.5em;
+            list-style-type: disc;
+            margin: 10px 0;
+        }
+
+        .review-content blockquote {
+            border-left: 3px solid #6a11cb;
+            padding-left: 1em;
+            color: #aaa;
+            font-style: italic;
+            margin: 15px 0;
+        }
+
+        .review-content code {
+            background-color: #2b2b2b;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: monospace;
+            display: inline-block;
+            color: #fff;
+        }
+
+        .review-content pre {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .review-content pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .review-date {
+            color: #999;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .comments-section {
+            margin-top: 20px;
+            padding-left: 55px;
+        }
+
+        .comments-section h4 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        .comment {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+
+        .comment img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .add-comment {
+            margin-top: 15px;
+        }
+
+        .add-comment textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 80px;
+            font-size: 16px;
+            background-color: #1e1e1e;
+            color: #eee;
+        }
+
+        .add-comment button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .add-comment button:hover {
+            background: #0d62c9;
+        }
+
+        .add-review {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #333;
+        }
+
+        .add-review h3 {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .add-review input,
+        .add-review textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #1e1e1e;
+            color: #eee;
+        }
+
+        .add-review textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .rating-input {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        #rating-select {
+            padding: 8px 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        .add-review button {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .add-review button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(38, 117, 252, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .book-header {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .large-cover {
+                width: 200px;
+                height: 300px;
+            }
+
+            .navbar {
+                flex-wrap: wrap;
+            }
+
+            .navbar-center {
+                order: 3;
+                margin-top: 15px;
+                justify-content: center;
+                width: 100%;
+            }
+        }
+        
+        .options-menu {
+            position: absolute;
+            background: #2a2a2a;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+        }
+        
+        .options-menu button {
+            width: 100%;
+            text-align: left;
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+        
+        .options-menu button:hover {
+            background: #3a3a3a;
+        }
+
+        .read-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .read-btn.read {
+            background: #f44336;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="header-comp"></div>
+    <script type="module">
+        import { createHeader } from './components/header.js';
+        const app = document.getElementById('header-comp');
+        app.prepend(createHeader());
+    </script>
+    
+    <main class="book-details">
+        <section class="book-header">
+            <img id="book-cover" src="" alt="Capa do livro" class="large-cover">
+
+            <div class="book-options">
+                <button class="options-btn">⋮</button>
+                <div class="options-menu">
+                    <button id="edit-book">Editar Livro</button>
+                    <button id="set-book-month">Definir como Livro do Mês</button>
+                    <button id="delete-book">Excluir Livro</button>
+                </div>
+            </div>
+            
+            <div class="book-info">
+                <h1 id="book-title"></h1>
+                <div id="book-authors" class="authors-list"></div>
+                <div id="book-categories" class="categories-list" style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;"></div>
+                <div class="book-meta">
+                    <span>Páginas: <span id="book-pages"></span></span>
+                    <span>Tempo de Leitura: <span id="book-reading-time"></span> minutos</span>
+                </div>
+                <div class="rating">
+                    <span id="avg-rating"></span>
+                    <div class="stars"></div>
+                </div>
+                <p id="book-sinopse" class="sinopse"></p>
+                <div id="book-of-month-badge" class="book-of-month">
+                    <span>⭐ Livro do Mês</span>
+                    <span id="book-month"></span>
+                </div>
+                <button id="mark-read-btn" class="read-btn">Marcar como Lido</button>
+            </div>
+        </section>
+        </section>
+
+        <section class="reviews-section">
+            <h2>Reviews</h2>
+            <div id="reviews-container"></div>
+            
+            <div class="add-review">
+                <h3>Adicionar Review</h3>
+                <form id="review-form">
+                    <input type="text" id="review-title" placeholder="Título" required>
+                    <textarea id="review-content" placeholder="Sua review (suporta Markdown)" required></textarea>
+                    <div class="rating-input">
+                        <label>Avaliação:</label>
+                        <select id="rating-select">
+                            <option value="5">★★★★★</option>
+                            <option value="4">★★★★☆</option>
+                            <option value="3">★★★☆☆</option>
+                            <option value="2">★★☆☆☆</option>
+                            <option value="1">★☆☆☆☆</option>
+                        </select>
+                    </div>
+                    <button type="submit">Enviar Review</button>
+                </form>
+            </div>
+        </section>
+    </main>
+    
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        let currentBookId;
+        let currentUserId;
+        let currentUserIsAdmin = false;
+        let bookAddedBy = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkSession();
+            loadBookDetails();
+            setupOptionsMenu();
+            document.getElementById('mark-read-btn').addEventListener('click', toggleReadStatus);
+            await checkReadStatus();
+        });
+
+        async function checkReadStatus() {
+            try {
+                const response = await fetch(`/api/books/${currentBookId}/read-status`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const btn = document.getElementById('mark-read-btn');
+                    if (data.read) {
+                        btn.textContent = 'Desmarcar como Lido';
+                        btn.classList.add('read');
+                    } else {
+                        btn.textContent = 'Marcar como Lido';
+                        btn.classList.remove('read');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao verificar status de leitura:', error);
+            }
+        }
+
+        async function toggleReadStatus() {
+            const btn = document.getElementById('mark-read-btn');
+            const isRead = btn.classList.contains('read');
+            
+            try {
+                const endpoint = isRead ? 'unread' : 'read';
+                const response = await fetch(`/api/books/${currentBookId}/${endpoint}`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    checkReadStatus(); 
+                } else {
+                    alert('Falha ao atualizar status');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar status');
+            }
+        }
+
+        function setupOptionsMenu() {
+            const optionsBtn = document.querySelector('.options-btn');
+            const optionsMenu = document.querySelector('.options-menu');
+            
+            optionsBtn.addEventListener('click', () => {
+                optionsMenu.style.display = optionsMenu.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            document.getElementById('edit-book').addEventListener('click', () => {
+                window.location.href = `/editar-livro?id=${currentBookId}`;
+            });
+            
+            document.getElementById('set-book-month').addEventListener('click', setAsBookOfMonth);
+            document.getElementById('delete-book').addEventListener('click', deleteBook);
+        }
+
+        async function setAsBookOfMonth() {
+            const monthYear = prompt('Digite o mês/ano (MM/AAAA):');
+            if (monthYear && /^\d{2}\/\d{4}$/.test(monthYear)) {
+                try {
+                    const response = await fetch(`/api/books/${currentBookId}/book-of-month`, {
+                        method: 'PUT',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ monthYear }),
+                        credentials: 'include'
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.text();
+                        throw new Error(error || 'Falha ao definir livro do mês');
+                    }
+                    
+                    const result = await response.json();
+                    alert('Livro definido como livro do mês!');
+                    window.location.reload(); 
+                } catch (err) {
+                    console.error('Erro:', err);
+                    alert('Erro: ' + err.message);
+                }
+            } else {
+                alert('Formato inválido! Use MM/AAAA (ex: 06/2023)');
+            }
+        }
+        
+        async function deleteBook() {
+            if (!confirm('Tem certeza que deseja excluir este livro?')) return;
+            
+            try {
+                const response = await fetch(`/api/books/${currentBookId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    alert('Livro excluído com sucesso!');
+                    window.location.href = '/';
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Falha ao excluir livro');
+                }
+            } catch (err) {
+                console.error('Erro:', err);
+                alert('Erro: ' + err.message);
+            }
+        }
+        
+        function getBookIdFromURL() {
+            const query = window.location.search.substring(1);
+            const params = new URLSearchParams(query);
+            return params.get('id');
+        }
+
+        function getBookIdFromURL() {
+            const query = window.location.search.substring(1);
+            const params = new URLSearchParams(query);
+            return params.get('id');
+        }
+
+        async function checkSession() {
+            try {
+                const response = await fetch('/api/check-session');
+                const data = await response.json();
+                
+                if (data.loggedIn) {
+                    currentUserId = data.userId;
+                    currentUserIsAdmin = data.isAdmin || false;
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar sessão:', error);
+            }
+        }
+        
+        async function loadBookDetails() {
+            currentBookId = getBookIdFromURL();
+            
+            if (!currentBookId) {
+                alert('ID do livro não encontrado na URL');
+                return;
+            }
+
+            try {
+                console.log(`Iniciando carregamento do livro ID: ${currentBookId}`);
+                
+                const response = await fetch(`/api/books/${currentBookId}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                console.log('Resposta recebida:', response);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Erro na resposta:', errorText);
+                    throw new Error(`Erro HTTP! status: ${response.status}`);
+                }
+                
+                const book = await response.json();
+                console.log('Dados do livro:', book);
+                
+                if (!book) {
+                    throw new Error('Livro não encontrado');
+                }
+                
+                displayBookDetails(book);
+                loadReviews(currentBookId);
+            } catch (error) {
+                console.error('Erro ao carregar livro:', error);
+                alert('Erro ao carregar detalhes do livro. Por favor, recarregue a página.');
+
+                const errorContainer = document.createElement('div');
+                errorContainer.className = 'error-container';
+                errorContainer.innerHTML = `
+                    <p>Não foi possível carregar os detalhes do livro.</p>
+                    <button onclick="window.location.reload()">Recarregar Página</button>
+                `;
+                document.querySelector('.book-details').prepend(errorContainer);
+            }
+        }
+
+        function displayBookDetails(book) {
+            document.getElementById('book-title').textContent = book.title;
+            document.getElementById('book-cover').src = book.cover_url;
+            document.getElementById('book-pages').textContent = book.page_count;
+            document.getElementById('book-reading-time').textContent = book.reading_time;
+
+            const categoriesContainer = document.getElementById('book-categories');
+            categoriesContainer.innerHTML = '';
+            if (book.categories && book.categories.length > 0) {
+                book.categories.forEach(category => {
+                    const categoryEl = document.createElement('span');
+                    categoryEl.className = 'category';
+                    categoryEl.textContent = category.name;
+                    categoriesContainer.appendChild(categoryEl);
+                });
+            }
+
+
+            const sinopseElement = document.getElementById('book-sinopse');
+            sinopseElement.innerHTML = marked.parse(book.sinopse || '');
+            
+            bookAddedBy = book.added_by;
+            
+            const authorsContainer = document.getElementById('book-authors');
+            authorsContainer.innerHTML = '';
+            if (book.authors) {
+                book.authors.split(', ').forEach(author => {
+                    const authorEl = document.createElement('div');
+                    authorEl.className = 'author';
+                    authorEl.textContent = author;
+                    authorsContainer.appendChild(authorEl);
+                });
+            }
+            
+            const badge = document.getElementById('book-of-month-badge');
+            if (book.is_book_of_month) {
+                badge.style.display = 'block';
+                document.getElementById('book-month').textContent = book.book_of_month_date;
+            } else {
+                badge.style.display = 'none';
+            }
+            
+            const optionsMenu = document.querySelector('.options-menu');
+            const editBtn = document.getElementById('edit-book');
+            const setMonthBtn = document.getElementById('set-book-month');
+            const deleteBtn = document.getElementById('delete-book');
+
+            if (currentUserIsAdmin || currentUserId === bookAddedBy) {
+                document.querySelector('.book-options').style.display = 'block';
+
+                setMonthBtn.style.display = currentUserIsAdmin ? 'block' : 'none';
+                deleteBtn.style.display = currentUserIsAdmin ? 'block' : 'none';
+            } else {
+                document.querySelector('.book-options').style.display = 'none';
+            }
+        }
+
+        async function loadReviews(bookId) {
+            try {
+                const response = await fetch(`/api/reviews/book/${bookId}`);
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar reviews');
+                }
+                
+                const reviews = await response.json();
+                const container = document.getElementById('reviews-container');
+                container.innerHTML = '';
+                
+                if (reviews.length === 0) {
+                    container.innerHTML = '<p>Nenhuma review disponível para este livro.</p>';
+                    return;
+                }
+                
+                reviews.forEach(review => {
+                    const reviewEl = document.createElement('div');
+                    reviewEl.className = 'review';
+
+                    const contentHtml = marked.parse(review.content || '');
+                    reviewEl.innerHTML = `
+                        <div class="review-header">
+                            <img 
+                            onclick="window.location.href='/user/${review.user_id}'" 
+                            src="${review.photo_url || 'https://i.pravatar.cc/40'}" 
+                            alt="${review.username}"
+                            style="cursor:pointer"
+                            />
+                            <div>
+                                <h3>${review.title}</h3>
+                                <div class="review-rating">${'★'.repeat(review.rating)}</div>
+                            </div>
+                        </div>
+                        <div class="review-content">${contentHtml}</div>
+                        <div class="review-date">${new Date(review.created_at).toLocaleDateString()}</div>
+                        
+                        <div class="comments-section">
+                            <h4>Comentários</h4>
+                            <div class="comments-container" id="comments-${review.id}"></div>
+                            <form class="add-comment" data-review="${review.id}">
+                                <textarea placeholder="Adicione um comentário"></textarea>
+                                <button type="submit">Comentar</button>
+                            </form>
+                        </div>
+                    `;
+                    container.appendChild(reviewEl);
+
+                    const commentForm = reviewEl.querySelector('.add-comment');
+                    commentForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const content = commentForm.querySelector('textarea').value.trim();
+                        if (!content) return;
+                        
+                        try {
+                            const response = await fetch(`/api/reviews/${review.id}/comments`, {
+                                method: 'POST',
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ content }),
+                                credentials: 'include'
+                            });
+                            
+                            if (response.ok) {
+                                commentForm.querySelector('textarea').value = '';
+                                loadComments(review.id);
+                            } else {
+                                const error = await response.json();
+                                throw new Error(error.error || 'Falha ao adicionar comentário');
+                            }
+                        } catch (err) {
+                            console.error('Erro:', err);
+                            alert('Erro: ' + err.message);
+                        }
+                    });
+
+                    loadComments(review.id);
+                });
+            } catch (err) {
+                console.error('Erro ao carregar reviews:', err);
+                const container = document.getElementById('reviews-container');
+                container.innerHTML = `<p class="error">Erro ao carregar reviews: ${err.message}</p>`;
+            }
+        }
+
+        async function loadComments(postId) {
+            try {
+                const response = await fetch(`/api/reviews/${postId}/comments`);
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar comentários');
+                }
+                
+                const comments = await response.json();
+                const container = document.getElementById(`comments-${postId}`);
+                if (!container) return;
+                
+                container.innerHTML = '';
+                
+                if (comments.length === 0) {
+                    container.innerHTML = '<p>Nenhum comentário ainda.</p>';
+                    return;
+                }
+                
+                comments.forEach(comment => {
+                    const commentEl = document.createElement('div');
+                    commentEl.className = 'comment';
+                    commentEl.innerHTML = `
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <img 
+                            onclick="window.location.href='/user/${comment.user_id}'" 
+                            src="${comment.photo_url || 'https://i.pravatar.cc/30'}" 
+                            alt="${comment.username}" 
+                            style="cursor:pointer"
+                            />
+                            <div>
+                                <strong>${comment.username}</strong>
+                                <p>${comment.content}</p>
+                                <small>${new Date(comment.created_at).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(commentEl);
+                });
+            } catch (err) {
+                console.error('Erro ao carregar comentários:', err);
+                const container = document.getElementById(`comments-${postId}`);
+                if (container) {
+                    container.innerHTML = `<p class="error">Erro ao carregar comentários: ${err.message}</p>`;
+                }
+            }
+        }
+
+        document.getElementById('review-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('review-title').value.trim();
+            const content = document.getElementById('review-content').value.trim();
+            const rating = parseInt(document.getElementById('rating-select').value);
+            
+            if (!title || !content) {
+                alert('Preencha todos os campos');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        bookId: currentBookId,
+                        title, 
+                        content, 
+                        rating 
+                    }),
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    document.getElementById('review-form').reset();
+                    loadReviews(currentBookId);
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Falha ao enviar review');
+                }
+            } catch (err) {
+                console.error('Erro:', err);
+                alert('Erro: ' + err.message);
+            }
+        });
+    </script>
+</body>
+</html>

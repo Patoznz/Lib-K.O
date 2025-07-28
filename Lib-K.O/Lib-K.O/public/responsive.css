@@ -1,0 +1,187 @@
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .navbar {
+        padding: 0.625rem 1rem;
+    }
+    
+    .logo {
+        width: 9rem;
+    }
+
+    #search-button {
+      display: none;
+    }
+
+    .search-container {
+      width: 11rem;
+    }
+    
+    #global-search[type="text"] {
+        width: 9rem;
+    }
+    
+    .users {
+        width: 150px;
+        height: 50px;
+    }
+    
+    .nameUser {
+        font-size: 14px;
+    }
+
+    .livro-destaque {
+        flex-direction: column;
+        height: auto;
+        padding: 100px 30px;
+        gap: 30px;
+    }
+    
+    .info-destaque {
+        width: 100%;
+    }
+    
+    .container-capa {
+        align-self: flex-start;
+    }
+    
+    .capa-destaque {
+        width: 250px;
+    }
+    
+    .info-destaque h1 {
+        font-size: 48px;
+    }
+
+    .Livros {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 20px;
+        padding: 25px;
+    }
+    
+    .livro-capa {
+        height: 240px;
+    }
+}
+
+/* Tablet Pequeno (600px - 767px) */
+@media (max-width: 767px) {
+    .navbar-center {
+        display: none; /* Esconde os links centrais */
+    }
+
+    .navbar-center {
+    display: none;
+  }
+
+    .logo {
+        width: 7rem;
+        
+    }
+    
+    .users {
+        width: auto;
+        background: transparent;
+        border: none;
+    }
+    
+    .nameUser {
+        display: none; /* Esconde o nome do usuário */
+    }
+
+    .livro-destaque {
+        padding: 40px 20px;
+        padding-top: 90px;
+    }
+    
+    .info-destaque h1 {
+        font-size: 36px;
+    }
+    
+    .capa-destaque {
+        width: 200px;
+    }
+    
+    .autor {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .descricao {
+        -webkit-line-clamp: 5; /* Mostra mais linhas em mobile */
+    }
+
+    .Livros {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 20px;
+        padding: 25px;
+    }
+    
+    .livro-capa {
+        height: 240px;
+    }
+
+    .menu-toggle {
+    display: block;
+  }
+  
+  .navbar-center {
+    display: none;
+  }
+}
+
+/* Mobile (até 599px) */
+@media (max-width: 599px) {
+    .navbar {
+        padding: 0.625rem 0;
+        height: 7vh;
+    }
+    
+    .logo {
+        width: 7rem;
+    }
+    
+    .users img {
+        width: 35px;
+        height: 35px;
+    }
+    
+    /* Adicione o botão hambúrguer se necessário */
+    .menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+}
+
+/* Mobile Pequeno (até 480px) */
+@media (max-width: 480px) {
+    .logo {
+        width: 6rem;
+    }
+    
+    .navbar-right {
+        gap: 10px;
+    }
+
+    .Livros {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 12px;
+    }
+    
+    .livro-capa {
+        height: 160px;
+    }
+    
+    .livro-titulo {
+        font-size: 0.85rem;
+    }
+    
+    .livro-autor {
+        font-size: 0.75rem;
+    }
+}
